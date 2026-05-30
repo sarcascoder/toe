@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "macdoc"
 version = "0.1.0"
-description = "On-device document extraction + reading-order checking for Apple Silicon (no GPU)."
+description = "Score how well any document extractor preserved reading order (separately from character accuracy). Extractor-agnostic, local, pure-python core; optional on-device extraction on Apple Silicon."
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
@@ -45,9 +45,9 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/your-org/macdoc"
-Repository = "https://github.com/your-org/macdoc"
-Issues = "https://github.com/your-org/macdoc/issues"
+Homepage = "https://github.com/sarcascoder/macdoc"
+Repository = "https://github.com/sarcascoder/macdoc"
+Issues = "https://github.com/sarcascoder/macdoc/issues"
 
 [project.scripts]
 macdoc = "macdoc.__main__:main"

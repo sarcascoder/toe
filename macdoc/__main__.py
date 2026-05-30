@@ -141,8 +141,9 @@ def cmd_demo(args):
 
 def build_parser():
     p = argparse.ArgumentParser(prog="macdoc",
-                                description="On-device document extraction + "
-                                            "reading-order checking on Apple Silicon")
+                                description="Score how well a document extractor "
+                                            "preserved reading order (works with any "
+                                            "extractor). Optional local extraction.")
     p.add_argument("--version", action="store_true", help="print version and exit")
     sub = p.add_subparsers(dest="cmd", required=False)
 

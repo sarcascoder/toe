@@ -6,7 +6,7 @@ of all sizes are welcome.
 ## Quick start
 
 ```bash
-git clone https://github.com/sarcasticcoder/macdoc && cd macdoc
+git clone https://github.com/sarcascoder/macdoc && cd macdoc
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[full,dev]"     # add ,mlx on Apple Silicon for inference
 macdoc demo                      # 5-second self-check, no model needed

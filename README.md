@@ -1,128 +1,154 @@
 # macdoc
 
-**On-device document extraction for Apple Silicon — no GPU, no cloud, no data leaving your Mac.**
+**Measure how well a document extractor preserved reading order — on top of whatever tool you already use.**
 
-`macdoc` turns PDFs and images into clean Markdown or structured JSON using small
-vision-language models that run locally via [MLX](https://github.com/ml-explore/mlx).
-It also ships a built-in **reading-order checker** — a feature most OCR tools
-lack — so you can catch the silent failure where a model transcribes every word
-correctly but in the wrong order (a classic problem on multi-column pages,
-tables, and forms).
+When you convert a PDF to Markdown (with Marker, Docling, MinerU, olmOCR, an LLM,
+anything), the text can come out **correct word-for-word but in the wrong order** —
+a two-column page read straight across, a sidebar spliced into the body, table
+cells serialized wrong. Plain accuracy scores (CER/edit distance) hide this, and
+it quietly breaks RAG, search, and downstream extraction.
+
+`macdoc` scores an extraction's **reading order separately from its character
+accuracy**, so that silent failure becomes visible. It's extractor-agnostic: bring
+any tool's output. It also includes *optional* lightweight on-device extraction on
+Apple Silicon if you want to generate predictions locally — but the point of macdoc
+is the scoring, not being another extractor.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-![Apple Silicon](https://img.shields.io/badge/Apple%20Silicon-M1--M4-black)
+![Pure-Python core](https://img.shields.io/badge/core-pure--python-blue)
 
 ---
 
-## Why macdoc
+## What macdoc is (and isn't)
 
-- **Private & offline.** Everything runs on your Mac. Documents never leave the device.
-- **No GPU needed.** Designed for Apple Silicon unified memory (M1–M4). Small,
-  efficient models — a 0.9B specialist beats a 70B generalist on real-world scans.
-- **More than OCR.** Transcribe to Markdown, extract schema-validated JSON, **and**
-  measure reading-order quality — separately from character accuracy.
-- **Try it in 5 seconds.** `macdoc demo` runs with no model download and no network.
+- ✅ **A quality/eval layer.** Score reading order vs. transcription for the output
+  of *any* extractor. Compare tools, regression-test your pipeline, build a labeled
+  eval set.
+- ✅ **Extractor-agnostic & local.** Pure-Python core; nothing leaves your machine.
+- ➕ **Optional on-device extraction** (Apple Silicon / MLX) for generating outputs.
+- ❌ **Not** a replacement for Marker/Docling/MinerU/olmOCR. Those are better, more
+  capable extractors — macdoc *evaluates* their output, it doesn't try to beat them.
+
+> **Honest scope:** scoring is **reference-based** — you provide a ground-truth file
+> and macdoc scores a prediction against it. So today macdoc is a benchmarking /
+> regression-testing tool (great for "compare N extractors on a labeled set" or "did
+> my pipeline regress?"), not a no-reference "is this extraction good?" detector.
 
 ## Install
 
 ```bash
-pip install macdoc            # core (pure-python: demo, eval, list-models)
-pip install "macdoc[mlx]"     # + on-device inference (Apple Silicon only)
-pip install "macdoc[full]"    # + PDF rasterization, JSON-schema validation, plots
+pip install macdoc            # core scorer (pure-python: demo, eval, list-models)
+pip install "macdoc[full]"    # + JSON-schema validation, plots, PDF rasterization
+pip install "macdoc[mlx]"     # + OPTIONAL on-device extraction (Apple Silicon only)
 ```
 
-From source:
+Installing macdoc does **not** download any OCR/VLM models. If you use the optional
+`extract`, the model is pulled from Hugging Face on first run and cached.
+
+## Quickstart — score an extraction
 
 ```bash
-git clone https://github.com/your-org/macdoc && cd macdoc
-pip install -e ".[mlx,full]"
-```
-
-## Quickstart
-
-```bash
-# 1) verify the install instantly — no model, no network
+# 0) verify the install instantly (no model, no network)
 macdoc demo
 
-# 2) transcribe a PDF to Markdown (downloads a small model on first run)
-macdoc extract invoice.pdf -o invoice.md
-
-# 3) pull structured fields as schema-validated JSON
-macdoc structured receipt.jpg --example-invoice -o receipt.json
-macdoc structured form.png --schema my_schema.json -o form.json
-
-# 4) check reading-order quality against a ground-truth file
-macdoc eval --ref truth.md --pred invoice.md
-
-# 5) see available local models and their RAM footprint
-macdoc list-models
+# 1) you have a ground-truth markdown and an extractor's output -> score it
+macdoc eval --ref truth.md --pred marker_output.md
 ```
 
-## Commands
-
-| command | what it does | needs a model? |
-|---|---|---|
-| `demo` | self-check + shows what reading-order error looks like | no |
-| `extract` | PDF/image → Markdown, layout & reading order preserved | yes |
-| `structured` | PDF/image → JSON validated against a schema (parse→validate→repair) | yes |
-| `eval` | score an extraction: character error **and** reading-order, separately | no |
-| `bench` | tok/s + peak RAM across local models on the same doc | yes |
-| `list-models` | the local model registry with RAM estimates | no |
-
-## Local models (registry)
-
-Pick by RAM budget; pass any Hugging Face repo id to override.
-
-| key | ~RAM @4-bit | best for |
-|---|---|---|
-| `deepseek-ocr2` (default) | ~4 GB | optical-compression OCR, layout + reading order |
-| `paddleocr-vl` | ~2 GB | tiny 0.9B specialist, robust on messy/photographed scans |
-| `qwen3-vl` | ~3 GB | reasoning over docs (VQA, charts), not just transcription |
-| `deepseek-vl2` | ~8 GB | 27B MoE / 4.5B active — OCR + tables + charts + grounding |
-
-> Repo ids are best-effort; if one 404s, search the HF Hub for an
-> `mlx-community/<name>` build or convert with `python -m mlx_vlm.convert`.
-
-## The reading-order checker
-
-Standard OCR scores conflate two different failures: **wrong characters** and
-**right text in the wrong order**. `macdoc eval` reports them as separate numbers:
-
 ```
-$ macdoc eval --ref truth.md --pred out.md
 CER:                 0.012   (character error — lower is better)
 reading-order score: 0.640   (1 = correct order, lower = scrambled)
 coverage:            1.000   (fraction of reference blocks found)
 spurious rate:       0.000   (hallucinated/extra blocks)
 ```
 
-A high CER-accuracy model can still score poorly on reading order — which quietly
-breaks RAG, search, and data extraction downstream. macdoc makes that visible.
+The two numbers are **independent**: a model can score ~0 CER (perfect characters)
+yet a low reading-order score (it read the layout wrong). That gap is the whole
+point.
 
-## Advanced / research
+## Use it with any extractor
 
-The `macdoc/research/` package contains a partial-order reading-order evaluator
-(`PORE`), a synthetic benchmark generator with ground-truth reading orders, and
-study/robustness runners. See [`PAPER.md`](PAPER.md). Run the property tests:
+macdoc doesn't care how `pred.md` was produced. For example:
+
+```bash
+# Marker
+marker_single mydoc.pdf --output_dir out/ && \
+  macdoc eval --ref truth.md --pred out/mydoc.md
+
+# Docling
+docling mydoc.pdf --to md --output out/ && \
+  macdoc eval --ref truth.md --pred out/mydoc.md
+
+# MinerU, olmOCR, an LLM, your own pipeline ... same pattern
+```
+
+Compare several extractors on the same labeled doc and see which preserves reading
+order best — not just which has the lowest character error.
+
+## Optional: generate predictions locally (Apple Silicon)
+
+If you'd rather produce outputs on-device instead of running a separate tool:
+
+```bash
+pip install "macdoc[mlx]"
+macdoc extract mydoc.pdf -o pred.md            # local VLM via MLX
+macdoc structured receipt.jpg --example-invoice -o out.json
+macdoc list-models                              # local model registry + RAM
+```
+
+This is a convenience, not the headline — small specialist models (DeepSeek-OCR-2,
+PaddleOCR-VL, Qwen3-VL) that fit on a laptop.
+
+## Commands
+
+| command | what it does | needs a model? |
+|---|---|---|
+| `eval` | **score an extraction**: character error + reading-order, separately | no |
+| `demo` | self-check; shows what a reading-order failure looks like | no |
+| `bench` | compare local models on the same doc (tok/s + peak RAM) | yes |
+| `list-models` | the optional local-extraction registry | no |
+| `extract` | *(optional)* PDF/image → Markdown via on-device VLM | yes |
+| `structured` | *(optional)* PDF/image → schema-validated JSON | yes |
+
+## How the scoring works
+
+`macdoc eval` segments reference and prediction into blocks, matches them by text
+similarity, then reports:
+
+- **CER** — normalized edit distance (sensitive to wrong characters).
+- **reading-order score** — based on how well the predicted block order agrees with
+  the reference order; *invariant to character errors*, so it isolates ordering.
+- **coverage / spurious** — how many reference blocks were found / how many extra
+  predicted blocks appeared.
+
+A research-grade evaluator lives in `macdoc/research/` (`PORE`): it models valid
+reading orders as a **partial order** (so independent regions like sidebars aren't
+unfairly penalized) and decomposes error into transcription vs. ordering with tested
+invariances. See [`PAPER.md`](PAPER.md).
 
 ```bash
 pip install -e ".[full,dev]"
-python -m pytest tests/ -q          # or: python tests/test_pore.py
+python tests/test_pore.py                       # property tests
 python -m macdoc.research.run_study --out pore_study --per-layout 5
 ```
 
-## Requirements
+## Honest prior art
 
-- macOS on Apple Silicon (M1–M4) for **inference**. The `demo`, `eval`,
-  `list-models`, and research tools are pure-Python and run anywhere.
-- Python 3.9+.
+Reading-order *detection* is well covered — Docling, MinerU, and Éclair produce
+reading order; HURIDOCS ships a dedicated model; ParseBench and OmniDocBench score
+it inside their benchmarks. macdoc's contribution is **packaging**: a small,
+extractor-agnostic, local CLI that gives you the order-vs-transcription split on
+your own outputs in one command. It's convenience and transparency, not new model
+tech.
 
-## Limitations (honest notes)
+## Limitations
 
-- Inference needs the `[mlx]` extra and Apple Silicon; it won't run on Intel/Windows/Linux.
-- Structured extraction uses prompt→validate→repair, not hard grammar-constrained
-  decoding (mlx-vlm doesn't expose that yet); always validate against your schema.
-- Model repo ids drift; `list-models` shows the current set.
+- **Reference-based.** You need ground-truth text to score against (it's a
+  benchmark/regression tool, not a no-reference quality detector — yet).
+- Optional `extract` needs the `[mlx]` extra and Apple Silicon; it won't run on
+  Intel/Windows/Linux. The scorer (`eval`, `demo`) runs anywhere.
+- Block matching can degrade if a prediction is *extremely* corrupted; macdoc
+  reports `coverage` so out-of-regime scores are visible.
 
 ## License
 
@@ -130,5 +156,6 @@ MIT — see [LICENSE](LICENSE). Free to use, modify, and redistribute.
 
 ## Contributing
 
-Issues and PRs welcome — model registry additions, new schema templates, and
-real-document reading-order test sets are especially useful.
+Issues and PRs welcome — especially **real-document reading-order test cases**
+(a reference + an extractor's output), adapters for popular extractors, and model
+registry entries. See [CONTRIBUTING.md](CONTRIBUTING.md).
