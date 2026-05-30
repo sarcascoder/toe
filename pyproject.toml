@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "macdoc"
+version = "0.1.0"
+description = "On-device document extraction + reading-order checking for Apple Silicon (no GPU)."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "macdoc contributors" }]
+keywords = ["ocr", "document-parsing", "vlm", "apple-silicon", "mlx", "reading-order", "on-device"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+    "Topic :: Text Processing",
+]
+
+# Core deps are pure-python so `demo`/`eval`/`list-models` work everywhere.
+# The actual VLM inference needs the [mlx] extra and runs on Apple Silicon only.
+dependencies = [
+    "Pillow>=10.0",
+]
+
+[project.optional-dependencies]
+# On-device inference (Apple Silicon / arm64 macOS only)
+mlx = [
+    "mlx>=0.18",
+    "mlx-vlm>=0.1.12",
+    "mlx-lm>=0.18",
+]
+# PDF rasterization + schema validation + plotting
+full = [
+    "PyMuPDF>=1.24",
+    "jsonschema>=4.0",
+    "matplotlib>=3.7",
+]
+dev = [
+    "pytest>=7.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/your-org/macdoc"
+Repository = "https://github.com/your-org/macdoc"
+Issues = "https://github.com/your-org/macdoc/issues"
+
+[project.scripts]
+macdoc = "macdoc.__main__:main"
+
+[tool.setuptools]
+packages = ["macdoc", "macdoc.research"]
+
+[tool.setuptools.package-data]
+macdoc = ["py.typed"]
