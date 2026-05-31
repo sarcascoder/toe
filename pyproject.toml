@@ -3,13 +3,13 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "toe"
+name = "taul"
 version = "0.1.0"
 description = "Score how well any document extractor preserved reading order (separately from character accuracy). Extractor-agnostic, local, pure-python core; optional on-device extraction on Apple Silicon."
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
-authors = [{ name = "toe contributors" }]
+authors = [{ name = "taul contributors" }]
 keywords = ["ocr", "document-parsing", "vlm", "apple-silicon", "mlx", "reading-order", "on-device"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -45,15 +45,15 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/sarcascoder/toe"
-Repository = "https://github.com/sarcascoder/toe"
-Issues = "https://github.com/sarcascoder/toe/issues"
+Homepage = "https://github.com/sarcascoder/taul"
+Repository = "https://github.com/sarcascoder/taul"
+Issues = "https://github.com/sarcascoder/taul/issues"
 
 [project.scripts]
-toe = "toe.__main__:main"
+taul = "taul.__main__:main"
 
 [tool.setuptools]
-packages = ["toe", "toe.research"]
+packages = ["taul", "taul.research"]
 
 [tool.setuptools.package-data]
-toe = ["py.typed"]
+taul = ["py.typed"]

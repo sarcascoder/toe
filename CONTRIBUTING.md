@@ -1,21 +1,21 @@
-# Contributing to toe
+# Contributing to taul
 
-Thanks for your interest! toe is a small, friendly project and contributions
+Thanks for your interest! taul is a small, friendly project and contributions
 of all sizes are welcome.
 
 ## Quick start
 
 ```bash
-git clone https://github.com/sarcascoder/toe && cd toe
+git clone https://github.com/sarcascoder/taul && cd taul
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[full,dev]"     # add ,mlx on Apple Silicon for inference
-toe demo                      # 5-second self-check, no model needed
+taul demo                      # 5-second self-check, no model needed
 python -m pytest tests/ -q       # run the property tests
 ```
 
 ## Good first contributions
 
-- **Model registry entries** (`toe/models.py`): add a small VLM with a working
+- **Model registry entries** (`taul/models.py`): add a small VLM with a working
   `mlx-community/*` repo id, RAM estimate, and a one-line note on what it's good at.
 - **Schema templates** for `structured` extraction (invoices, receipts, forms, IDs).
 - **Real-document reading-order test cases**: a page image + its block reading
@@ -30,13 +30,13 @@ python -m pytest tests/ -q       # run the property tests
 - Add or update a test when you change metric behavior — the PORE properties in
   `tests/test_pore.py` are the correctness contract.
 - Be honest in docs about limitations; this project values signal over hype.
-- Run `toe demo` and `pytest` before opening a PR. CI runs both on Python
+- Run `taul demo` and `pytest` before opening a PR. CI runs both on Python
   3.9–3.12.
 
 ## Filing issues
 
 Include your macOS + chip (e.g. M4 Pro), Python version, the command you ran, and
-the full error. For model issues, paste the repo id and `toe list-models`.
+the full error. For model issues, paste the repo id and `taul list-models`.
 
 By contributing you agree your contributions are licensed under the project's MIT
 license.

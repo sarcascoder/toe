@@ -6,11 +6,11 @@ __pycache__/
 build/
 dist/
 # sdist staging dir
-toe-[0-9]*/
+taul-[0-9]*/
 .venv/
 venv/
 
-# toe generated study/benchmark artifacts
+# taul generated study/benchmark artifacts
 pore_study/
 pore_robustness/
 *.out.md
