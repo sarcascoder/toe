@@ -148,7 +148,7 @@ a gradient:
 | newsletter | 3 stories | 3 independent chains, no cross-constraints | many |
 
 Each sample renders to a PNG (for running real VLMs) with a sidecar JSON of
-blocks + bboxes + constraints. Generator: `macdoc/research/synth.py`.
+blocks + bboxes + constraints. Generator: `toe/research/synth.py`.
 
 ---
 
@@ -181,7 +181,7 @@ Two findings:
    A single-gold-order metric would wrongly penalize this. PORE does not.
 
 ### 5.2 Real-VLM study (remaining work — runs on Apple Silicon)
-`python -m macdoc.research.run_study --real-model deepseek-ocr2` evaluates a
+`python -m toe.research.run_study --real-model deepseek-ocr2` evaluates a
 real model on the suite and plots it in the same (transcription, ordering)
 plane. **Hypothesis H1:** strong document VLMs show low transcription error but
 non-trivial ordering violation that grows with cross-region constraint density —
@@ -193,7 +193,7 @@ core of the submission.
 
 ## 6. Limitations & threats to validity (state plainly)
 
-### 6.1 Matcher robustness (empirical; `macdoc/research/robustness.py`)
+### 6.1 Matcher robustness (empirical; `toe/research/robustness.py`)
 The decomposition assumes blocks are matched, so the obvious attack is: does
 transcription noise break matching and contaminate the ordering axis? We sweep
 per-character corruption `r ∈ [0, 0.6]` on (i) a known-*valid* order and (ii) a
@@ -256,10 +256,10 @@ find out is built and verified here.
 ```
 pip install -r requirements.txt
 PYTHONPATH=. python3 tests/test_pore.py                 # property proofs
-PYTHONPATH=. python3 -m macdoc.research.run_study \
+PYTHONPATH=. python3 -m toe.research.run_study \
     --out pore_study --per-layout 5                     # mock study + figures
 # real VLM (Apple Silicon):
-PYTHONPATH=. python3 -m macdoc.research.run_study \
+PYTHONPATH=. python3 -m toe.research.run_study \
     --out pore_real --real-model deepseek-ocr2
 ```
 

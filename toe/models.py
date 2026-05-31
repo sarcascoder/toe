@@ -6,7 +6,7 @@ a registry of small, low-active-param models that run comfortably on an M-series
 Mac with unified memory.
 
 The exact HF repo ids below are the MLX-converted community builds that are the
-common path on Apple Silicon. They drift over time -- run `python -m macdoc
+common path on Apple Silicon. They drift over time -- run `python -m toe
 list-models` to print them, and if a repo 404s, search the HF Hub for an
 `mlx-community/<name>` conversion or convert it yourself with `mlx_vlm.convert`.
 """

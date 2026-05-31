@@ -27,7 +27,7 @@ jobs:
           pip install -e ".[full,dev]"
 
       - name: Self-check (zero-setup demo, no model needed)
-        run: macdoc demo
+        run: toe demo
 
       - name: Property tests (PORE metric correctness)
         run: python -m pytest tests/ -q

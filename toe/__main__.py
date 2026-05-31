@@ -2,25 +2,25 @@
 
 Examples:
   # list the model registry (works without mlx installed)
-  python -m macdoc list-models
+  python -m toe list-models
 
   # transcribe a PDF to Markdown with the default model
-  python -m macdoc extract invoice.pdf -o out.md
+  python -m toe extract invoice.pdf -o out.md
 
   # structured extraction against the built-in invoice schema
-  python -m macdoc structured receipt.jpg --example-invoice -o out.json
+  python -m toe structured receipt.jpg --example-invoice -o out.json
 
   # structured extraction against your own JSON Schema
-  python -m macdoc structured form.png --schema my_schema.json -o out.json
+  python -m toe structured form.png --schema my_schema.json -o out.json
 
   # benchmark two models on the same doc (the report's experiment)
-  python -m macdoc bench sample.pdf -m deepseek-ocr2 -m paddleocr-vl
+  python -m toe bench sample.pdf -m deepseek-ocr2 -m paddleocr-vl
 
   # score an extraction against ground truth (CER + reading-order)
-  python -m macdoc eval --ref truth.md --pred out.md
+  python -m toe eval --ref truth.md --pred out.md
 
   # zero-setup demo: no model or network needed, verifies the install
-  python -m macdoc demo
+  python -m toe demo
 """
 
 from __future__ import annotations
@@ -121,7 +121,7 @@ def cmd_demo(args):
     and no network -- proves the install works and shows what the tool measures."""
     from .research import synth, metric
     from .research.run_study import mock_predict
-    print("macdoc demo -- no model/network needed\n")
+    print("toe demo -- no model/network needed\n")
     print(f"{'layout':<20}{'reader':<14}{'transcription':>14}{'ordering':>11}")
     print("-" * 59)
     for layout in synth.LAYOUTS:
@@ -140,7 +140,7 @@ def cmd_demo(args):
 
 
 def build_parser():
-    p = argparse.ArgumentParser(prog="macdoc",
+    p = argparse.ArgumentParser(prog="toe",
                                 description="Score how well a document extractor "
                                             "preserved reading order (works with any "
                                             "extractor). Optional local extraction.")
@@ -200,7 +200,7 @@ def main(argv=None):
     args = parser.parse_args(argv)
     if getattr(args, "version", False):
         from . import __version__
-        print(f"macdoc {__version__}")
+        print(f"toe {__version__}")
         return
     if not getattr(args, "func", None):
         parser.print_help()

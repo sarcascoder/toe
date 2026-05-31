@@ -5,10 +5,10 @@ Run: PYTHONPATH=. python3 tests/test_pore.py
 
 from itertools import permutations
 
-from macdoc.research.partial_order import (
+from toe.research.partial_order import (
     PartialOrder, violation_rate, kendall_tau_distance_normalized,
 )
-from macdoc.research import synth, metric
+from toe.research import synth, metric
 
 
 def test_P1_ambiguity_robustness():
@@ -41,7 +41,7 @@ def test_P3_transcription_invariance():
     gt = doc.gt_texts()
     # correct order, clean
     clean = synth.SynthDoc  # noqa (silence linter)
-    from macdoc.research.run_study import mock_predict, _corrupt
+    from toe.research.run_study import mock_predict, _corrupt
     import random
     pred_clean = mock_predict(doc, "column_aware")
     pred_noisy = [_corrupt(t, random.Random(7), rate=0.15) for t in pred_clean]
@@ -57,7 +57,7 @@ def test_P4_order_invariance_of_transcription():
     """Transcription error is invariant to reordering blocks (matching holds)."""
     doc = synth.make_doc("single_column", seed=2)
     gt = doc.gt_texts()
-    from macdoc.research.run_study import mock_predict
+    from toe.research.run_study import mock_predict
     pred = mock_predict(doc, "column_aware")
     pred_rev = list(reversed(pred))
     r1 = metric.evaluate(gt, doc.partial_order, pred)
@@ -72,7 +72,7 @@ def test_P4_order_invariance_of_transcription():
 def test_discrimination_raster_vs_aware():
     """The benchmark must DISCRIMINATE: a raster reader should fail multi-column
     ordering while transcribing perfectly; a column-aware reader should not."""
-    from macdoc.research.run_study import mock_predict
+    from toe.research.run_study import mock_predict
     doc = synth.make_doc("two_column", seed=3)
     gt = doc.gt_texts()
     aware = metric.evaluate(gt, doc.partial_order, mock_predict(doc, "column_aware"))
@@ -88,7 +88,7 @@ def test_discrimination_raster_vs_aware():
 def test_ambiguity_not_penalized_on_newsletter():
     """A model reading independent stories in a different (but internally
     correct) order must NOT be penalized -- the whole point vs. gold-sequence."""
-    from macdoc.research.run_study import _reading_order_ids
+    from toe.research.run_study import _reading_order_ids
     doc = synth.make_doc("newsletter", seed=4)
     gt = doc.gt_texts()
     by_id = {b.id: b.text for b in doc.blocks}

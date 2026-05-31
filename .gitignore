@@ -6,11 +6,11 @@ __pycache__/
 build/
 dist/
 # sdist staging dir
-macdoc-[0-9]*/
+toe-[0-9]*/
 .venv/
 venv/
 
-# macdoc generated study/benchmark artifacts
+# toe generated study/benchmark artifacts
 pore_study/
 pore_robustness/
 *.out.md
